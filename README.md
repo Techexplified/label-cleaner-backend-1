@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Label Cleaner for Trello (Power-Up & Web App)
 
 A Trello Power-Up and board management tool that finds duplicate labels, removes unused labels, and keeps all board labels organized.
@@ -54,3 +55,7 @@ npm run dev
 # Build for production
 npm run build
 ```
+=======
+# label-cleaner-backend-1
+Backend API for a Trello Label Cleaner application to detect duplicate labels, identify unused labels, and manage board labels.
+>>>>>>> origin/main
