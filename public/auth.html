@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Trello Authorization - Label Cleaner</title>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background: #f4f5f7;
+        color: #172b4d;
+      }
+      .card {
+        background: #ffffff;
+        padding: 24px 32px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 400px;
+      }
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #dfe1e6;
+        border-top-color: #0c66e4;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+      }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="spinner"></div>
+      <h3>Connecting to Trello...</h3>
+      <p id="status-text">Authorizing Label Cleaner Power-Up</p>
+    </div>
+
+    <script>
+      // Extract token from URL hash: #token=...
+      const hash = window.location.hash;
+      const match = hash.match(/token=([^&]+)/);
+      const token = match ? match[1] : null;
+
+      if (token) {
+        document.getElementById('status-text').innerText = 'Authorization successful! Closing...';
+
+        // Notify opener window if opened via window.open
+        if (window.opener) {
+          window.opener.postMessage({ type: 'TRELLO_AUTH_SUCCESS', token: token }, '*');
+        }
+
+        // Also store token via Trello Power-Up client if available
+        try {
+          if (window.TrelloPowerUp) {
+            const t = window.TrelloPowerUp.iframe();
+            t.set('member', 'private', 'trello_token', token).then(function () {
+              window.close();
+            });
+          } else {
+            setTimeout(function () {
+              window.close();
+            }, 800);
+          }
+        } catch (e) {
+          setTimeout(function () {
+            window.close();
+          }, 800);
+        }
+      } else {
+        document.getElementById('status-text').innerText = 'No authorization token found.';
+      }
+    </script>
+  </body>
+</html>

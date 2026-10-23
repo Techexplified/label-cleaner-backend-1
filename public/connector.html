@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Label Cleaner Power-Up</title>
+    <!-- Official Trello Power-Up Client Library -->
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body>
+    <script>
+      /* Official Trello Power-Up Initialization */
+      window.TrelloPowerUp.initialize({
+        // Adds "Label Cleaner" button to the board header
+        'board-buttons': function (t, opts) {
+          return [
+            {
+              // SVG Tag Icon encoded for dark and light board header backgrounds
+              icon: {
+                dark: 'https://api.iconify.design/lucide:tag.svg?color=%23172b4d',
+                light: 'https://api.iconify.design/lucide:tag.svg?color=%23ffffff',
+              },
+              text: 'Label Cleaner',
+              callback: function (t) {
+                return t.modal({
+                  title: 'Label Cleaner',
+                  url: './index.html',
+                  fullscreen: false,
+                  accentColor: '#0C66E4',
+                  height: 640,
+                  actions: [
+                    {
+                      icon: 'https://api.iconify.design/lucide:x.svg?color=%23626f86',
+                      alt: 'Close',
+                      callback: function (t) {
+                        return t.closeModal();
+                      },
+                    },
+                  ],
+                });
+              },
+            },
+          ];
+        },
+
+        // Power-Up settings capability
+        'show-settings': function (t, options) {
+          return t.popup({
+            title: 'Label Cleaner Settings',
+            url: './index.html#settings',
+            height: 480,
+          });
+        },
+
+        // Authorization status
+        'authorization-status': function (t, options) {
+          return t.get('member', 'private', 'trello_token').then(function (token) {
+            return { authorized: !!token };
+          });
+        },
+
+        // Show authorization popup
+        'show-authorization': function (t, options) {
+          return t.popup({
+            title: 'Authorize Label Cleaner',
+            url: './auth.html',
+            height: 250,
+          });
+        },
+      });
+    </script>
+  </body>
+</html>
