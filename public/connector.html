@@ -9,47 +9,50 @@
   </head>
   <body>
     <script>
+      var origin = window.location.origin;
+      var iconUrl = origin + '/favicon.svg';
+
+      function openLabelCleanerModal(t) {
+        return t.modal({
+          title: 'Label Cleaner',
+          url: origin + '/index.html',
+          fullscreen: false,
+          accentColor: '#0C66E4',
+          height: 640,
+          actions: [
+            {
+              icon: iconUrl,
+              alt: 'Close',
+              callback: function (t) {
+                return t.closeModal();
+              },
+            },
+          ],
+        });
+      }
+
       /* Official Trello Power-Up Initialization */
       window.TrelloPowerUp.initialize({
         // Adds "Label Cleaner" button to the board header
         'board-buttons': function (t, opts) {
           return [
             {
-              // SVG Tag Icon encoded for dark and light board header backgrounds
               icon: {
-                dark: 'https://api.iconify.design/lucide:tag.svg?color=%23172b4d',
-                light: 'https://api.iconify.design/lucide:tag.svg?color=%23ffffff',
+                dark: iconUrl,
+                light: iconUrl,
               },
               text: 'Label Cleaner',
+              condition: 'always',
               callback: function (t) {
-                return t.modal({
-                  title: 'Label Cleaner',
-                  url: './index.html',
-                  fullscreen: false,
-                  accentColor: '#0C66E4',
-                  height: 640,
-                  actions: [
-                    {
-                      icon: 'https://api.iconify.design/lucide:x.svg?color=%23626f86',
-                      alt: 'Close',
-                      callback: function (t) {
-                        return t.closeModal();
-                      },
-                    },
-                  ],
-                });
+                return openLabelCleanerModal(t);
               },
             },
           ];
         },
 
-        // Power-Up settings capability
+        // Power-Up settings capability (also opens Label Cleaner)
         'show-settings': function (t, options) {
-          return t.popup({
-            title: 'Label Cleaner Settings',
-            url: './index.html#settings',
-            height: 480,
-          });
+          return openLabelCleanerModal(t);
         },
 
         // Authorization status
@@ -63,7 +66,7 @@
         'show-authorization': function (t, options) {
           return t.popup({
             title: 'Authorize Label Cleaner',
-            url: './auth.html',
+            url: origin + '/auth.html',
             height: 250,
           });
         },
