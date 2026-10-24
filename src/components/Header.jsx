@@ -1,7 +1,7 @@
 import React from 'react';
-import { Tag, X, Sparkles, Settings } from 'lucide-react';
+import { Tag, X, Settings } from 'lucide-react';
 
-export default function Header({ boardName, mode, isTrello, onClose, onOpenSettings }) {
+export default function Header({ boardName, isTrello, onClose, onOpenSettings }) {
   return (
     <header className="modal-header">
       <div className="header-left">
@@ -17,39 +17,15 @@ export default function Header({ boardName, mode, isTrello, onClose, onOpenSetti
       </div>
 
       <div className="header-right">
-        {mode === 'demo' && (
-          <button
-            className="demo-pill-btn"
-            onClick={onOpenSettings}
-            title="Click to switch boards or connect live Trello"
-          >
-            <Sparkles size={13} />
-            <span>Demo Mode</span>
-          </button>
-        )}
-
-        {mode === 'api' && (
-          <button
-            className="api-pill-btn"
-            onClick={onOpenSettings}
-            title="Connected via Trello API"
-          >
-            <span className="online-indicator" />
-            <span>Trello Live</span>
-          </button>
-        )}
-
-        {isTrello && (
-          <span className="trello-native-pill" title="Running natively as Trello Power-Up">
-            <span className="online-indicator" />
-            <span>Trello Power-Up</span>
-          </span>
-        )}
+        <span className="trello-native-pill" title="Official Trello Power-Up">
+          <span className="online-indicator" />
+          <span>Trello Power-Up</span>
+        </span>
 
         <button
           className="header-settings-btn"
           onClick={onOpenSettings}
-          title="Trello Connection & Settings"
+          title="Trello Power-Up Setup Guide"
           aria-label="Settings"
         >
           <Settings size={18} />

@@ -6,21 +6,17 @@ import DuplicateLabelsView from './components/DuplicateLabelsView';
 import UnusedLabelsView from './components/UnusedLabelsView';
 import AllLabelsView from './components/AllLabelsView';
 import TrelloSetupModal from './components/TrelloSetupModal';
+import TagIllustration from './components/TagIllustration';
 import confetti from 'canvas-confetti';
+import { Tag, ExternalLink, Shield } from 'lucide-react';
 import {
   isTrelloIframe,
-  getTrelloIframe,
   closeTrelloModal,
   getSavedCredentials,
-  saveCredentials,
   getTrelloPowerUpToken,
   saveTrelloPowerUpToken,
   openTrelloAuthPopup,
   getTrelloNativeBoardData,
-  getDemoData,
-  saveDemoData,
-  resetDemoData,
-  fetchLiveBoardData,
   deleteLiveLabel,
   updateLiveLabel,
   createLiveLabel,
@@ -32,7 +28,6 @@ import './App.css';
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [isTrello, setIsTrello] = useState(false);
-  const [mode, setMode] = useState('demo'); // 'demo' | 'api' | 'powerup'
   const [boardInfo, setBoardInfo] = useState({ id: '', name: '' });
   const [rawLabels, setRawLabels] = useState([]);
   const [rawCards, setRawCards] = useState([]);
@@ -64,11 +59,10 @@ function App() {
     setTimeout(() => setToastMessage(''), 3500);
   };
 
-  // Load Data based on mode
-  const loadData = useCallback(async (currentMode = mode, creds = credentials) => {
+  // Load Data directly from active Trello board
+  const loadData = useCallback(async () => {
     setIsScanning(true);
     try {
-      // 1. Running inside Trello Power-Up modal iframe
       if (isTrelloIframe()) {
         const trelloData = await getTrelloNativeBoardData();
         if (trelloData) {
@@ -78,69 +72,39 @@ function App() {
 
           const res = analyzeLabels(trelloData.labels, trelloData.cards);
           setAnalysis(res);
-          return;
         }
       }
-
-      // 2. Connected via REST API
-      if (currentMode === 'api' && creds.apiKey && creds.token && creds.boardId) {
-        const liveData = await fetchLiveBoardData(creds.boardId, creds.apiKey, creds.token);
-        setBoardInfo({ id: liveData.board.id, name: liveData.board.name });
-        setRawLabels(liveData.labels);
-        setRawCards(liveData.cards);
-
-        const res = analyzeLabels(liveData.labels, liveData.cards);
-        setAnalysis(res);
-        return;
-      }
-
-      // 3. Standalone / Demo Mode (Product Roadmap & Sprint Board)
-      const demo = getDemoData();
-      setBoardInfo(demo.board);
-      setRawLabels(demo.labels);
-      setRawCards(demo.cards);
-
-      const res = analyzeLabels(demo.labels, demo.cards);
-      setAnalysis(res);
     } catch (err) {
-      console.error('Error loading data:', err);
+      console.error('Error loading board data:', err);
       showToast(`Error: ${err.message || 'Failed to load board data'}`);
     } finally {
       setIsScanning(false);
     }
-  }, [mode, credentials]);
+  }, []);
 
   // Initial mount
   useEffect(() => {
     const inIframe = isTrelloIframe();
     setIsTrello(inIframe);
     if (inIframe) {
-      setMode('powerup');
-      loadData('powerup');
-    } else {
-      const creds = getSavedCredentials();
-      setMode(creds.mode);
-      loadData(creds.mode, creds);
+      loadData();
     }
   }, [loadData]);
 
   // Handle Scan action from Home screen
   const handleScan = async () => {
     setIsScanning(true);
-    if (isTrello) {
-      // Re-read latest board data directly from Trello
-      try {
-        const trelloData = await getTrelloNativeBoardData();
-        if (trelloData) {
-          setBoardInfo(trelloData.board);
-          setRawLabels(trelloData.labels);
-          setRawCards(trelloData.cards);
-          const res = analyzeLabels(trelloData.labels, trelloData.cards);
-          setAnalysis(res);
-        }
-      } catch (e) {
-        console.warn('Error refreshing Trello board data', e);
+    try {
+      const trelloData = await getTrelloNativeBoardData();
+      if (trelloData) {
+        setBoardInfo(trelloData.board);
+        setRawLabels(trelloData.labels);
+        setRawCards(trelloData.cards);
+        const res = analyzeLabels(trelloData.labels, trelloData.cards);
+        setAnalysis(res);
       }
+    } catch (e) {
+      console.warn('Error refreshing Trello board data', e);
     }
 
     setTimeout(() => {
@@ -184,45 +148,19 @@ function App() {
     });
   };
 
-  // Merge single duplicate cluster
+  // Merge single duplicate cluster directly on Trello
   const handleMergeCluster = async (group, canonicalId) => {
     setIsOperating(true);
     try {
       const redundantLabels = group.labels.filter((l) => l.id !== canonicalId);
-      const redundantIds = redundantLabels.map((l) => l.id);
+      const token = await ensureTrelloToken();
+      const apiKey = credentials.apiKey;
 
-      if (isTrello || mode === 'api') {
-        const token = await ensureTrelloToken();
-        const apiKey = credentials.apiKey;
-
-        for (const redLbl of redundantLabels) {
-          await mergeLiveLabel(redLbl.id, canonicalId, rawCards, apiKey, token);
-        }
-        await loadData(mode, { ...credentials, token });
-        showToast(`Merged duplicate "${group.displayName}" on Trello board!`);
-      } else {
-        // Demo Mode / Local State
-        const updatedCards = rawCards.map((card) => {
-          const hasRedundant = (card.idLabels || []).some((id) => redundantIds.includes(id));
-          if (!hasRedundant) return card;
-
-          const filtered = (card.idLabels || []).filter((id) => !redundantIds.includes(id));
-          if (!filtered.includes(canonicalId)) {
-            filtered.push(canonicalId);
-          }
-          return { ...card, idLabels: filtered };
-        });
-
-        const updatedLabels = rawLabels.filter((l) => !redundantIds.includes(l.id));
-
-        setRawCards(updatedCards);
-        setRawLabels(updatedLabels);
-        saveDemoData({ board: boardInfo, labels: updatedLabels, cards: updatedCards });
-
-        const res = analyzeLabels(updatedLabels, updatedCards);
-        setAnalysis(res);
-        showToast(`Merged duplicate "${group.displayName}" into canonical label!`);
+      for (const redLbl of redundantLabels) {
+        await mergeLiveLabel(redLbl.id, canonicalId, rawCards, apiKey, token);
       }
+      await loadData();
+      showToast(`Merged duplicate "${group.displayName}" on Trello board!`);
     } catch (err) {
       console.error(err);
       showToast(`Merge failed: ${err.message}`);
@@ -231,51 +169,21 @@ function App() {
     }
   };
 
-  // Merge all duplicate clusters
+  // Merge all duplicate clusters directly on Trello
   const handleMergeAll = async (selectedCanonicals) => {
     setIsOperating(true);
     try {
-      let token = '';
-      if (isTrello || mode === 'api') {
-        token = await ensureTrelloToken();
-      }
-
-      let updatedCards = [...rawCards];
-      let updatedLabels = [...rawLabels];
-
+      const token = await ensureTrelloToken();
       for (const group of analysis.duplicateGroups) {
         const canonicalId = selectedCanonicals[group.normalizedName] || group.canonicalId;
         const redundantLabels = group.labels.filter((l) => l.id !== canonicalId);
-        const redundantIds = redundantLabels.map((l) => l.id);
 
-        if (isTrello || mode === 'api') {
-          for (const redLbl of redundantLabels) {
-            await mergeLiveLabel(redLbl.id, canonicalId, updatedCards, credentials.apiKey, token);
-          }
-        } else {
-          updatedCards = updatedCards.map((card) => {
-            const hasRedundant = (card.idLabels || []).some((id) => redundantIds.includes(id));
-            if (!hasRedundant) return card;
-
-            const filtered = (card.idLabels || []).filter((id) => !redundantIds.includes(id));
-            if (!filtered.includes(canonicalId)) {
-              filtered.push(canonicalId);
-            }
-            return { ...card, idLabels: filtered };
-          });
-          updatedLabels = updatedLabels.filter((l) => !redundantIds.includes(l.id));
+        for (const redLbl of redundantLabels) {
+          await mergeLiveLabel(redLbl.id, canonicalId, rawCards, credentials.apiKey, token);
         }
       }
 
-      if (isTrello || mode === 'api') {
-        await loadData(mode, { ...credentials, token });
-      } else {
-        setRawCards(updatedCards);
-        setRawLabels(updatedLabels);
-        saveDemoData({ board: boardInfo, labels: updatedLabels, cards: updatedCards });
-        const res = analyzeLabels(updatedLabels, updatedCards);
-        setAnalysis(res);
-      }
+      await loadData();
       showToast('All duplicate labels have been successfully merged!');
     } catch (err) {
       console.error(err);
@@ -285,30 +193,15 @@ function App() {
     }
   };
 
-  // Delete batch of labels (unused or selected)
+  // Delete batch of labels directly from Trello
   const handleDeleteLabels = async (labelIds) => {
     setIsOperating(true);
     try {
-      if (isTrello || mode === 'api') {
-        const token = await ensureTrelloToken();
-        for (const id of labelIds) {
-          await deleteLiveLabel(id, credentials.apiKey, token);
-        }
-        await loadData(mode, { ...credentials, token });
-      } else {
-        const updatedLabels = rawLabels.filter((l) => !labelIds.includes(l.id));
-        const updatedCards = rawCards.map((c) => ({
-          ...c,
-          idLabels: (c.idLabels || []).filter((id) => !labelIds.includes(id)),
-        }));
-
-        setRawLabels(updatedLabels);
-        setRawCards(updatedCards);
-        saveDemoData({ board: boardInfo, labels: updatedLabels, cards: updatedCards });
-
-        const res = analyzeLabels(updatedLabels, updatedCards);
-        setAnalysis(res);
+      const token = await ensureTrelloToken();
+      for (const id of labelIds) {
+        await deleteLiveLabel(id, credentials.apiKey, token);
       }
+      await loadData();
       showToast(`Deleted ${labelIds.length} label(s) from board.`);
     } catch (err) {
       console.error(err);
@@ -318,27 +211,13 @@ function App() {
     }
   };
 
-  // Create new label
+  // Create new label directly on Trello
   const handleCreateLabel = async ({ name, color }) => {
     setIsOperating(true);
     try {
-      if (isTrello || mode === 'api') {
-        const token = await ensureTrelloToken();
-        await createLiveLabel(boardInfo.id, { name, color }, credentials.apiKey, token);
-        await loadData(mode, { ...credentials, token });
-      } else {
-        const newLbl = {
-          id: `lbl-${Date.now()}`,
-          name: name.trim(),
-          color: color || 'blue',
-        };
-        const updatedLabels = [...rawLabels, newLbl];
-        setRawLabels(updatedLabels);
-        saveDemoData({ board: boardInfo, labels: updatedLabels, cards: rawCards });
-
-        const res = analyzeLabels(updatedLabels, rawCards);
-        setAnalysis(res);
-      }
+      const token = await ensureTrelloToken();
+      await createLiveLabel(boardInfo.id, { name, color }, credentials.apiKey, token);
+      await loadData();
       showToast(`Created label "${name || 'unnamed'}"`);
     } catch (err) {
       showToast(`Failed to create label: ${err.message}`);
@@ -347,22 +226,13 @@ function App() {
     }
   };
 
-  // Update existing label
+  // Update existing label directly on Trello
   const handleUpdateLabel = async (labelId, { name, color }) => {
     setIsOperating(true);
     try {
-      if (isTrello || mode === 'api') {
-        const token = await ensureTrelloToken();
-        await updateLiveLabel(labelId, { name, color }, credentials.apiKey, token);
-        await loadData(mode, { ...credentials, token });
-      } else {
-        const updatedLabels = rawLabels.map((l) => (l.id === labelId ? { ...l, name, color } : l));
-        setRawLabels(updatedLabels);
-        saveDemoData({ board: boardInfo, labels: updatedLabels, cards: rawCards });
-
-        const res = analyzeLabels(updatedLabels, rawCards);
-        setAnalysis(res);
-      }
+      const token = await ensureTrelloToken();
+      await updateLiveLabel(labelId, { name, color }, credentials.apiKey, token);
+      await loadData();
       showToast(`Updated label "${name}"`);
     } catch (err) {
       showToast(`Failed to update label: ${err.message}`);
@@ -371,65 +241,95 @@ function App() {
     }
   };
 
-  // Save Credentials & reload
-  const handleSaveCredentials = (newCreds) => {
-    saveCredentials(newCreds);
-    setCredentials((prev) => ({ ...prev, ...newCreds }));
-    if (newCreds.mode) {
-      setMode(newCreds.mode);
-      loadData(newCreds.mode, { ...credentials, ...newCreds });
-    }
-  };
-
-  // Reset Demo
-  const handleResetDemo = () => {
-    const fresh = resetDemoData();
-    setBoardInfo(fresh.board);
-    setRawLabels(fresh.labels);
-    setRawCards(fresh.cards);
-    setIsScanned(false);
-    const res = analyzeLabels(fresh.labels, fresh.cards);
-    setAnalysis(res);
-    showToast('Demo board data reset to original state.');
-  };
-
-  // Close handler: In Trello calls t.closeModal()
-  const handleClose = () => {
-    if (isTrello) {
-      closeTrelloModal();
-    } else {
-      showToast('In trello.com, this closes the Power-Up modal window.');
-    }
-  };
-
-  // Execute pending action after authorization
   const handleConfirmAuth = async () => {
     setShowAuthPrompt(false);
     if (pendingAction) {
-      try {
-        await pendingAction();
-      } catch (e) {
-        showToast(e.message || 'Authorization cancelled.');
-      }
+      const action = pendingAction;
       setPendingAction(null);
+      await action();
     }
   };
 
-  return (
-    <div className={`app-wrapper ${isTrello ? 'trello-iframe-mode' : 'standalone-mode'}`}>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="app-toast">
-          <span>{toastMessage}</span>
-        </div>
-      )}
+  const handleClose = () => {
+    closeTrelloModal();
+  };
 
-      {/* Main Modal Frame matching screenshot */}
-      <div className="label-cleaner-modal">
-        {/* Header */}
+  // When viewed outside of Trello, show official Power-Up installation portal
+  if (!isTrello) {
+    return (
+      <div className="app-wrapper standalone-mode">
+        {toastMessage && <div className="app-toast">{toastMessage}</div>}
+
+        <div className="modal-container" style={{ maxWidth: '640px', padding: '0' }}>
+          <div className="modal-header">
+            <div className="header-left">
+              <div className="header-icon-box">
+                <Tag className="header-icon" size={18} />
+              </div>
+              <h1 className="header-title">Label Cleaner</h1>
+            </div>
+            <div className="header-right">
+              <span className="trello-native-pill">
+                <span className="online-indicator" />
+                <span>Official Trello Power-Up</span>
+              </span>
+            </div>
+          </div>
+
+          <div style={{ padding: '36px 32px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+              <TagIllustration />
+            </div>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#091E42', marginBottom: '8px' }}>
+              Trello Power-Up Ready
+            </h2>
+            <p style={{ fontSize: '14px', color: '#44546F', lineHeight: '1.6', maxWidth: '480px', margin: '0 auto 28px' }}>
+              Label Cleaner operates directly inside your active Trello boards to detect duplicate labels, remove unused labels, and organize cards.
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn-primary-save"
+                onClick={() => setIsSettingsOpen(true)}
+                style={{ padding: '10px 22px', fontSize: '14px' }}
+              >
+                <Shield size={16} />
+                <span>How to Add to Trello</span>
+              </button>
+              <a
+                href="https://trello.com"
+                target="_blank"
+                rel="noreferrer"
+                className="btn-cancel"
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '14px' }}
+              >
+                <span>Go to Trello</span>
+                <ExternalLink size={14} />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <TrelloSetupModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      </div>
+    );
+  }
+
+  // Inside Trello Board iframe: Full Power-Up UI
+  return (
+    <div className="app-wrapper trello-iframe-mode">
+      {/* Toast Notification */}
+      {toastMessage && <div className="app-toast">{toastMessage}</div>}
+
+      {/* Main Power-Up Modal Container */}
+      <div className="modal-container">
+        {/* Top Header */}
         <Header
           boardName={boardInfo.name}
-          mode={mode}
           isTrello={isTrello}
           onClose={handleClose}
           onOpenSettings={() => setIsSettingsOpen(true)}
@@ -535,14 +435,10 @@ function App() {
         </div>
       )}
 
-      {/* Trello Settings / Power-Up Setup Modal */}
+      {/* Trello Power-Up Setup Guide Modal */}
       <TrelloSetupModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        credentials={credentials}
-        onSaveCredentials={handleSaveCredentials}
-        onResetDemo={handleResetDemo}
-        isTrello={isTrello}
       />
     </div>
   );

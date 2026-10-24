@@ -5,8 +5,8 @@ node_modules
 # Production build output
 dist
 dist-ssr
-build
-.netlify
+.vercel
+.turbo
 
 # Local environment & secrets
 .env

@@ -13,108 +13,10 @@ export const TRELLO_COLORS = {
   null: { label: 'No Color', hex: '#b3bac5', darkHex: '#626f86', bg: '#e9ecef', lightBg: '#f8f9fa', text: '#172b4d', dot: '#94a3b8' },
 };
 
-export const DEFAULT_APP_KEY = '5f4d8e3b2a1c0d9e8f7a6b5c4d3e2f1a';
+export const DEFAULT_APP_KEY = import.meta.env.VITE_TRELLO_API_KEY || '5f4d8e3b2a1c0d9e8f7a6b5c4d3e2f1a';
+export const APP_NAME = import.meta.env.VITE_TRELLO_APP_NAME || 'Label Cleaner Power-Up';
 
-// Build exact cards matching all screenshots
-const buildDemoCards = () => {
-  const cards = [];
 
-  // 18 cards for 'lbl-bug-1' (Bug)
-  for (let i = 1; i <= 18; i++) {
-    cards.push({ id: `c-bug-${i}`, name: `Bug issue #${i}: Resolve layout/api glitch`, idLabels: ['lbl-bug-1'] });
-  }
-  // 6 cards for 'lbl-bug-2' (bug)
-  for (let i = 1; i <= 6; i++) {
-    cards.push({ id: `c-bugdup-${i}`, name: `bug report #${i}: Navigation responsive issue`, idLabels: ['lbl-bug-2'] });
-  }
-
-  // 12 cards for 'lbl-qa-1' (QA)
-  for (let i = 1; i <= 12; i++) {
-    cards.push({ id: `c-qa-${i}`, name: `QA test suite #${i}: Validation on checkout`, idLabels: ['lbl-qa-1'] });
-  }
-  // 3 cards for 'lbl-qa-2' (qa)
-  for (let i = 1; i <= 3; i++) {
-    cards.push({ id: `c-qadup-${i}`, name: `qa task #${i}: Browser compatibility check`, idLabels: ['lbl-qa-2'] });
-  }
-
-  // 8 cards for 'lbl-review-1' (Review)
-  for (let i = 1; i <= 8; i++) {
-    cards.push({ id: `c-rev-${i}`, name: `Review PR #${i}: Payment gateway refactor`, idLabels: ['lbl-review-1'] });
-  }
-  // 2 cards for 'lbl-review-2' (review)
-  for (let i = 1; i <= 2; i++) {
-    cards.push({ id: `c-revdup-${i}`, name: `review task #${i}: Update analytics events`, idLabels: ['lbl-review-2'] });
-  }
-
-  // 5 cards for 'lbl-test-1' (Testing)
-  for (let i = 1; i <= 5; i++) {
-    cards.push({ id: `c-test-${i}`, name: `Testing suite #${i}: End-to-end user signup`, idLabels: ['lbl-test-1'] });
-  }
-  // 4 cards for 'lbl-test-2' (testing)
-  for (let i = 1; i <= 4; i++) {
-    cards.push({ id: `c-testdup-${i}`, name: `testing item #${i}: Unit test coverage improvement`, idLabels: ['lbl-test-2'] });
-  }
-
-  // 4 cards for Docs
-  for (let i = 1; i <= 4; i++) {
-    cards.push({ id: `c-docs-${i}`, name: `API documentation update #${i}`, idLabels: ['lbl-docs'] });
-  }
-
-  // 8 cards for Design
-  for (let i = 1; i <= 8; i++) {
-    cards.push({ id: `c-des-${i}`, name: `Design component audit #${i}`, idLabels: ['lbl-design'] });
-  }
-
-  // Other active labels
-  cards.push({ id: 'c-active-fe', name: 'Frontend state refactoring', idLabels: ['lbl-fe'] });
-  cards.push({ id: 'c-active-be', name: 'Database index tuning', idLabels: ['lbl-be'] });
-  cards.push({ id: 'c-active-sec', name: 'Security audit on credentials', idLabels: ['lbl-sec'] });
-
-  return cards;
-};
-
-// Initial Demo Board Data matching all Screenshots:
-// Exactly 24 Total Labels, 4 Duplicate Groups, 7 Unused Labels
-export const INITIAL_DEMO_DATA = {
-  board: {
-    id: 'demo-board-101',
-    name: 'Product Roadmap & Sprint Board',
-  },
-  labels: [
-    // Duplicate Group 1: Bug / bug
-    { id: 'lbl-bug-1', name: 'Bug', color: 'red' },
-    { id: 'lbl-bug-2', name: 'bug', color: 'red' },
-
-    // Duplicate Group 2: QA / qa
-    { id: 'lbl-qa-1', name: 'QA', color: 'green' },
-    { id: 'lbl-qa-2', name: 'qa', color: 'green' },
-
-    // Duplicate Group 3: Review / review
-    { id: 'lbl-review-1', name: 'Review', color: 'yellow' },
-    { id: 'lbl-review-2', name: 'review', color: 'yellow' },
-
-    // Duplicate Group 4: Testing / testing
-    { id: 'lbl-test-1', name: 'Testing', color: 'purple' },
-    { id: 'lbl-test-2', name: 'testing', color: 'purple' },
-
-    // Active Unique Labels (Matching Image 4)
-    { id: 'lbl-docs', name: 'Docs', color: 'orange' },
-    { id: 'lbl-design', name: 'Design', color: 'pink' },
-    { id: 'lbl-fe', name: 'Frontend', color: 'blue' },
-    { id: 'lbl-be', name: 'Backend', color: 'purple' },
-    { id: 'lbl-sec', name: 'Security', color: 'black' },
-
-    // 7 Unused Labels (Matching Image 2 & 3: 0 cards attached)
-    { id: 'lbl-unused-blocked', name: 'Blocked', color: 'red' },
-    { id: 'lbl-unused-hold', name: 'On Hold', color: 'orange' },
-    { id: 'lbl-unused-low', name: 'Low Priority', color: 'blue' },
-    { id: 'lbl-unused-info', name: 'Need Info', color: 'purple' },
-    { id: 'lbl-unused-archived', name: 'Archived', color: 'black' },
-    { id: 'lbl-unused-client', name: 'Client Review', color: 'pink' },
-    { id: 'lbl-unused-internal', name: 'Internal', color: 'green' },
-  ],
-  cards: buildDemoCards(),
-};
 
 // Check if running inside Trello Power-Up iframe
 export function isTrelloIframe() {
@@ -158,8 +60,6 @@ const STORAGE_KEYS = {
   API_KEY: 'trello_label_cleaner_api_key',
   API_TOKEN: 'trello_label_cleaner_token',
   SELECTED_BOARD: 'trello_label_cleaner_selected_board',
-  DEMO_DATA: 'trello_label_cleaner_demo_data',
-  MODE: 'trello_label_cleaner_mode', // 'powerup' | 'api' | 'demo'
 };
 
 export function getSavedCredentials() {
@@ -167,15 +67,13 @@ export function getSavedCredentials() {
     apiKey: localStorage.getItem(STORAGE_KEYS.API_KEY) || DEFAULT_APP_KEY,
     token: localStorage.getItem(STORAGE_KEYS.API_TOKEN) || '',
     boardId: localStorage.getItem(STORAGE_KEYS.SELECTED_BOARD) || '',
-    mode: isTrelloIframe() ? 'powerup' : (localStorage.getItem(STORAGE_KEYS.MODE) || 'demo'),
   };
 }
 
-export function saveCredentials({ apiKey, token, boardId, mode }) {
+export function saveCredentials({ apiKey, token, boardId }) {
   if (apiKey !== undefined) localStorage.setItem(STORAGE_KEYS.API_KEY, apiKey);
   if (token !== undefined) localStorage.setItem(STORAGE_KEYS.API_TOKEN, token);
   if (boardId !== undefined) localStorage.setItem(STORAGE_KEYS.SELECTED_BOARD, boardId);
-  if (mode !== undefined) localStorage.setItem(STORAGE_KEYS.MODE, mode);
 }
 
 // Get token from Trello Power-Up private storage or localStorage
@@ -208,8 +106,13 @@ export async function saveTrelloPowerUpToken(token) {
 // Open official Trello OAuth window for seamless 1-click user authorization
 export function openTrelloAuthPopup(apiKey = DEFAULT_APP_KEY) {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const returnUrl = encodeURIComponent(`${origin}/auth.html`);
-  const authUrl = `https://trello.com/1/authorize?expiration=never&name=Label+Cleaner+Power-Up&scope=read,write&response_type=token&key=${apiKey}&return_url=${returnUrl}`;
+  const configuredAppUrl = import.meta.env.VITE_APP_URL ? import.meta.env.VITE_APP_URL.replace(/\/$/, '') : '';
+  const returnUrl = encodeURIComponent(
+    import.meta.env.VITE_TRELLO_OAUTH_REDIRECT_URL ||
+    (configuredAppUrl ? `${configuredAppUrl}/auth.html` : `${origin}/auth.html`)
+  );
+  const appName = encodeURIComponent(APP_NAME);
+  const authUrl = `https://trello.com/1/authorize?expiration=never&name=${appName}&scope=read,write&response_type=token&key=${apiKey}&return_url=${returnUrl}`;
   const width = 580;
   const height = 640;
   const left = window.screen.width / 2 - width / 2;
@@ -245,27 +148,6 @@ export function openTrelloAuthPopup(apiKey = DEFAULT_APP_KEY) {
   });
 }
 
-// Demo Board State in LocalStorage
-export function getDemoData() {
-  const stored = localStorage.getItem(STORAGE_KEYS.DEMO_DATA);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Error parsing demo data', e);
-    }
-  }
-  return JSON.parse(JSON.stringify(INITIAL_DEMO_DATA));
-}
-
-export function saveDemoData(data) {
-  localStorage.setItem(STORAGE_KEYS.DEMO_DATA, JSON.stringify(data));
-}
-
-export function resetDemoData() {
-  localStorage.removeItem(STORAGE_KEYS.DEMO_DATA);
-  return JSON.parse(JSON.stringify(INITIAL_DEMO_DATA));
-}
 
 // Read data directly from active Trello Board inside Power-Up
 export async function getTrelloNativeBoardData() {

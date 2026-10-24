@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Label Cleaner for Trello (Power-Up & Web App)
 
 A Trello Power-Up and board management tool that finds duplicate labels, removes unused labels, and keeps all board labels organized.
@@ -54,8 +53,24 @@ npm run dev
 
 # Build for production
 npm run build
-```
-=======
-# label-cleaner-backend-1
-Backend API for a Trello Label Cleaner application to detect duplicate labels, identify unused labels, and manage board labels.
->>>>>>> origin/main
+
+## 🔑 Environment Variables (.env)
+
+| Variable | Description | Default / Example |
+|---|---|---|
+| `VITE_TRELLO_API_KEY` | Trello Developer API Key | `5f4d8e3b2a1c0d9e8f7a6b5c4d3e2f1a` |
+| `VITE_TRELLO_APP_NAME` | Name shown on Trello authorization screen | `Label Cleaner Power-Up` |
+| `VITE_TRELLO_POWERUP_ID` | Custom Power-Up ID from Atlassian portal | (Optional) |
+| `VITE_APP_URL` | Public production deployment URL | `https://your-domain.vercel.app` |
+| `VITE_TRELLO_OAUTH_REDIRECT_URL` | Explicit OAuth callback redirect URL | `https://your-domain.vercel.app/auth.html` |
+| `VITE_API_BASE_URL` | Optional backend API base URL | `http://localhost:5000/api` |
+
+## 🚀 Deployment (Vercel)
+
+1. Connect this repository to [Vercel](https://vercel.com).
+2. Set Root Directory to `labelcleaner` (or `./`).
+3. Framework Preset: `Vite`.
+4. Build Command: `npm run build`.
+5. Output Directory: `dist`.
+6. Click **Deploy**. Vercel uses `vercel.json` to configure iframe embedding headers for Trello automatically!
+
