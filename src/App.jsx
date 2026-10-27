@@ -360,7 +360,7 @@ function App() {
       {toastMessage && <div className="app-toast">{toastMessage}</div>}
 
       {/* Main Power-Up Modal Container */}
-      <div className="modal-container">
+      <div className="modal-container label-cleaner-modal">
         {/* Top Header */}
         <Header
           boardName={boardInfo.name}

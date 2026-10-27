@@ -109,7 +109,9 @@ export default function DuplicateLabelsView({
                 variant="light"
                 size="md"
               />
-              <div className="compare-cards-num">{sourceLabel.usageCount} cards</div>
+              <div className="compare-cards-num">
+                {sourceLabel.usageCount} {sourceLabel.usageCount === 1 ? 'card' : 'cards'}
+              </div>
               <div className="compare-cards-desc">updated and merged</div>
             </div>
 
@@ -126,7 +128,9 @@ export default function DuplicateLabelsView({
                 variant="solid"
                 size="md"
               />
-              <div className="compare-cards-num">{targetLabel.usageCount} cards</div>
+              <div className="compare-cards-num">
+                {targetLabel.usageCount} {targetLabel.usageCount === 1 ? 'card' : 'cards'}
+              </div>
               <div className="compare-cards-desc">already using this label</div>
             </div>
           </div>
@@ -135,7 +139,9 @@ export default function DuplicateLabelsView({
           <div className="merge-checklist-card">
             <div className="checklist-item">
               <CheckCircle2 size={18} className="check-bullet-icon" />
-              <span>{sourceLabel.usageCount} cards updated to use "{targetLabel.name}"</span>
+              <span>
+                {sourceLabel.usageCount} {sourceLabel.usageCount === 1 ? 'card' : 'cards'} updated to use "{targetLabel.name}"
+              </span>
             </div>
             <div className="checklist-item">
               <CheckCircle2 size={18} className="check-bullet-icon" />
@@ -259,7 +265,7 @@ export default function DuplicateLabelsView({
                       />
                     </div>
                     <span className="dup-cards-count">
-                      {lbl.usageCount} cards
+                      {lbl.usageCount} {lbl.usageCount === 1 ? 'card' : 'cards'}
                     </span>
                   </div>
                 ))}
