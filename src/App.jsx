@@ -11,8 +11,10 @@ import confetti from 'canvas-confetti';
 import { Tag, ExternalLink, Shield } from 'lucide-react';
 import {
   isTrelloIframe,
+  getTrelloIframe,
   closeTrelloModal,
   getSavedCredentials,
+  saveCredentials,
   getTrelloPowerUpToken,
   saveTrelloPowerUpToken,
   openTrelloAuthPopup,
@@ -72,6 +74,19 @@ function App() {
 
           const res = analyzeLabels(trelloData.labels, trelloData.cards);
           setAnalysis(res);
+          setIsScanned(true);
+
+          if (res.totalLabelsCount > 0 && res.duplicateLabelsCount === 0 && res.unusedLabelsCount === 0) {
+            try {
+              confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 },
+              });
+            } catch {
+              // ignore
+            }
+          }
         }
       }
     } catch (err) {
@@ -82,12 +97,20 @@ function App() {
     }
   }, []);
 
-  // Initial mount
+  // Initial mount & Trello render hook
   useEffect(() => {
     const inIframe = isTrelloIframe();
     setIsTrello(inIframe);
     if (inIframe) {
       loadData();
+
+      // Hook into Trello Power-Up lifecycle
+      const t = getTrelloIframe();
+      if (t && typeof t.render === 'function') {
+        t.render(() => {
+          loadData();
+        });
+      }
     }
   }, [loadData]);
 
@@ -95,25 +118,25 @@ function App() {
   const handleScan = async () => {
     setIsScanning(true);
     try {
-      const trelloData = await getTrelloNativeBoardData();
-      if (trelloData) {
-        setBoardInfo(trelloData.board);
-        setRawLabels(trelloData.labels);
-        setRawCards(trelloData.cards);
-        const res = analyzeLabels(trelloData.labels, trelloData.cards);
-        setAnalysis(res);
-      }
-    } catch (e) {
-      console.warn('Error refreshing Trello board data', e);
-    }
+      let freshLabels = rawLabels;
+      let freshCards = rawCards;
 
-    setTimeout(() => {
-      const res = analyzeLabels(rawLabels, rawCards);
+      if (isTrelloIframe()) {
+        const trelloData = await getTrelloNativeBoardData();
+        if (trelloData) {
+          setBoardInfo(trelloData.board);
+          freshLabels = trelloData.labels;
+          freshCards = trelloData.cards;
+          setRawLabels(freshLabels);
+          setRawCards(freshCards);
+        }
+      }
+
+      const res = analyzeLabels(freshLabels, freshCards);
       setAnalysis(res);
       setIsScanned(true);
-      setIsScanning(false);
 
-      if (res.duplicateLabelsCount === 0 && res.unusedLabelsCount === 0) {
+      if (res.totalLabelsCount > 0 && res.duplicateLabelsCount === 0 && res.unusedLabelsCount === 0) {
         try {
           confetti({
             particleCount: 100,
@@ -124,7 +147,18 @@ function App() {
           // ignore
         }
       }
-    }, 500);
+
+      if (freshLabels.length === 0) {
+        showToast('No labels detected on this board.');
+      } else {
+        showToast(`Scan complete: ${res.totalLabelsCount} labels analyzed.`);
+      }
+    } catch (e) {
+      console.error('Error refreshing Trello board data', e);
+      showToast(`Scan error: ${e.message || 'Failed to scan board'}`);
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   // Helper to ensure Trello token is available before write operations
@@ -439,6 +473,12 @@ function App() {
       <TrelloSetupModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        credentials={credentials}
+        onSaveCredentials={(newCreds) => {
+          saveCredentials(newCreds);
+          setCredentials((prev) => ({ ...prev, ...newCreds }));
+          showToast('Settings saved successfully!');
+        }}
       />
     </div>
   );

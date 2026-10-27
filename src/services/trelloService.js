@@ -154,15 +154,116 @@ export async function getTrelloNativeBoardData() {
   const t = getTrelloIframe();
   if (!t) return null;
 
-  const [boardData, cardsData] = await Promise.all([
-    t.board('id', 'name', 'labels'),
-    t.cards('id', 'name', 'idLabels', 'labels'),
-  ]);
+  // 1. Fetch board data safely with fallbacks
+  let boardData = null;
+  try {
+    boardData = await t.board('id', 'name', 'labels');
+  } catch (err1) {
+    console.warn('t.board("id", "name", "labels") failed, trying t.board("all"):', err1);
+    try {
+      boardData = await t.board('all');
+    } catch (err2) {
+      console.warn('t.board("all") failed, trying minimal fields:', err2);
+      try {
+        boardData = await t.board('id', 'name');
+      } catch (err3) {
+        console.error('All t.board calls failed:', err3);
+        boardData = { id: '', name: 'Trello Board' };
+      }
+    }
+  }
+
+  // 2. Fetch cards safely (ONLY request allowed fields: 'id', 'name', 'labels')
+  // CRITICAL: Do NOT request 'idLabels' as that causes Trello client library to reject!
+  let cardsData = [];
+  try {
+    cardsData = await t.cards('id', 'name', 'labels');
+  } catch (cardErr1) {
+    console.warn('t.cards("id", "name", "labels") failed, trying t.cards("all"):', cardErr1);
+    try {
+      cardsData = await t.cards('all');
+    } catch (cardErr2) {
+      console.error('All t.cards calls failed:', cardErr2);
+      cardsData = [];
+    }
+  }
+
+  // 3. Build a comprehensive labels map from both board definitions and attached card labels
+  const labelMap = new Map();
+
+  if (boardData && Array.isArray(boardData.labels)) {
+    boardData.labels.forEach((lbl) => {
+      if (lbl && lbl.id) {
+        labelMap.set(lbl.id, {
+          id: lbl.id,
+          name: lbl.name || '',
+          color: lbl.color || 'null',
+          uses: typeof lbl.uses === 'number' ? lbl.uses : 0,
+          ...lbl,
+        });
+      }
+    });
+  }
+
+  // Normalize cards and ensure card.idLabels & card.labels are both set
+  const normalizedCards = (cardsData || []).map((card) => {
+    const cardLabels = Array.isArray(card.labels) ? card.labels : [];
+    const idLabels = Array.isArray(card.idLabels) && card.idLabels.length > 0
+      ? card.idLabels
+      : cardLabels.map((l) => (typeof l === 'string' ? l : l?.id)).filter(Boolean);
+
+    // Also register any label found on cards that wasn't in board.labels
+    cardLabels.forEach((lbl) => {
+      if (lbl && typeof lbl === 'object' && lbl.id && !labelMap.has(lbl.id)) {
+        labelMap.set(lbl.id, {
+          id: lbl.id,
+          name: lbl.name || '',
+          color: lbl.color || 'null',
+          ...lbl,
+        });
+      }
+    });
+
+    return {
+      ...card,
+      idLabels,
+      labels: cardLabels,
+    };
+  });
+
+  let labelsList = Array.from(labelMap.values());
+
+  // 4. Fallback to live REST API if native returned 0 labels and credentials exist
+  if (labelsList.length === 0 && boardData?.id) {
+    try {
+      const creds = getSavedCredentials();
+      const token = await getTrelloPowerUpToken();
+      const activeToken = token || creds.token;
+      if (activeToken && creds.apiKey) {
+        console.info('Native returned 0 labels; attempting REST API fallback...');
+        const restData = await fetchLiveBoardData(boardData.id, creds.apiKey, activeToken);
+        if (restData?.labels?.length > 0) {
+          labelsList = restData.labels;
+          if (restData.cards?.length > 0) {
+            normalizedCards.splice(0, normalizedCards.length, ...restData.cards.map((c) => ({
+              ...c,
+              idLabels: Array.isArray(c.idLabels) ? c.idLabels : (c.labels || []).map((l) => l.id || l),
+            })));
+          }
+        }
+      }
+    } catch (restErr) {
+      console.warn('REST API fallback attempt failed:', restErr);
+    }
+  }
 
   return {
-    board: { id: boardData.id, name: boardData.name },
-    labels: boardData.labels || [],
-    cards: cardsData || [],
+    board: {
+      id: boardData?.id || '',
+      name: boardData?.name || 'Trello Board',
+    },
+    labels: labelsList,
+    cards: normalizedCards,
   };
 }
 
@@ -229,15 +330,22 @@ export async function createLiveLabel(boardId, { name, color }, apiKey, token) {
 }
 
 export async function mergeLiveLabel(sourceLabelId, targetLabelId, cards, apiKey, token) {
-  const affectedCards = cards.filter(c => (c.idLabels || []).includes(sourceLabelId));
+  const getCardIds = (c) => {
+    if (Array.isArray(c.idLabels) && c.idLabels.length > 0) return c.idLabels;
+    if (Array.isArray(c.labels)) return c.labels.map((l) => (typeof l === 'string' ? l : l?.id)).filter(Boolean);
+    return [];
+  };
+
+  const affectedCards = cards.filter((c) => getCardIds(c).includes(sourceLabelId));
   for (const card of affectedCards) {
-    if (!card.idLabels.includes(targetLabelId)) {
+    const ids = getCardIds(card);
+    if (!ids.includes(targetLabelId)) {
       await fetch(`https://api.trello.com/1/cards/${card.id}/idLabels?value=${targetLabelId}&key=${apiKey}&token=${token}`, {
-        method: 'POST'
+        method: 'POST',
       });
     }
     await fetch(`https://api.trello.com/1/cards/${card.id}/idLabels/${sourceLabelId}?key=${apiKey}&token=${token}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     });
   }
   await deleteLiveLabel(sourceLabelId, apiKey, token);
@@ -247,50 +355,74 @@ export async function mergeLiveLabel(sourceLabelId, targetLabelId, cards, apiKey
 // Compute analysis on board labels and cards
 export function analyzeLabels(labels = [], cards = []) {
   const usageMap = {};
-  labels.forEach(lbl => {
-    usageMap[lbl.id] = {
-      count: 0,
-      cards: [],
-    };
+  labels.forEach((lbl) => {
+    if (lbl && lbl.id) {
+      usageMap[lbl.id] = {
+        count: typeof lbl.uses === 'number' ? lbl.uses : 0,
+        cards: [],
+      };
+    }
   });
 
-  cards.forEach(card => {
-    (card.idLabels || []).forEach(lblId => {
-      if (usageMap[lblId]) {
-        usageMap[lblId].count += 1;
-        usageMap[lblId].cards.push(card);
+  // If cards are provided, recalculate usage counts from cards directly
+  if (Array.isArray(cards) && cards.length > 0) {
+    labels.forEach((lbl) => {
+      if (lbl && lbl.id) {
+        usageMap[lbl.id].count = 0;
       }
     });
-  });
+
+    cards.forEach((card) => {
+      let cardLabelIds = [];
+      if (Array.isArray(card.idLabels) && card.idLabels.length > 0) {
+        cardLabelIds = card.idLabels;
+      } else if (Array.isArray(card.labels)) {
+        cardLabelIds = card.labels.map((l) => (typeof l === 'string' ? l : l?.id)).filter(Boolean);
+      }
+
+      const uniqueIds = Array.from(new Set(cardLabelIds));
+      uniqueIds.forEach((lblId) => {
+        if (usageMap[lblId]) {
+          usageMap[lblId].count += 1;
+          usageMap[lblId].cards.push(card);
+        }
+      });
+    });
+  }
 
   // Calculate Unused Labels (labels with 0 cards)
-  const unusedLabels = labels.filter(lbl => (usageMap[lbl.id]?.count || 0) === 0);
+  const unusedLabels = labels.filter((lbl) => (usageMap[lbl.id]?.count || 0) === 0);
 
-  // Group duplicate labels (case-insensitive name match)
+  // Group duplicate labels (case-insensitive name match or duplicate unnamed colors)
   const duplicateGroups = [];
   const nameGroups = {};
 
-  labels.forEach(lbl => {
+  labels.forEach((lbl) => {
     const rawName = (lbl.name || '').trim();
     const normalized = rawName.toLowerCase();
-    if (!nameGroups[normalized]) {
-      nameGroups[normalized] = [];
+    // Use name if available; if empty name, group by color if color exists
+    const groupKey = normalized.length > 0 ? `name:${normalized}` : (lbl.color && lbl.color !== 'null' ? `color:${lbl.color}` : '');
+    if (!groupKey) return;
+
+    if (!nameGroups[groupKey]) {
+      nameGroups[groupKey] = [];
     }
-    nameGroups[normalized].push({
+    nameGroups[groupKey].push({
       ...lbl,
       usageCount: usageMap[lbl.id]?.count || 0,
       cards: usageMap[lbl.id]?.cards || [],
     });
   });
 
-  Object.entries(nameGroups).forEach(([normName, groupLabels]) => {
-    if (groupLabels.length > 1 && normName.length > 0) {
+  Object.entries(nameGroups).forEach(([groupKey, groupLabels]) => {
+    if (groupLabels.length > 1) {
       const sortedByUsage = [...groupLabels].sort((a, b) => b.usageCount - a.usageCount);
       const canonicalId = sortedByUsage[0].id;
+      const displayName = sortedByUsage[0].name || `Unnamed (${sortedByUsage[0].color || 'No Color'})`;
 
       duplicateGroups.push({
-        normalizedName: normName,
-        displayName: sortedByUsage[0].name,
+        normalizedName: groupKey,
+        displayName,
         canonicalId,
         labels: sortedByUsage,
         totalOccurrences: sortedByUsage.reduce((sum, l) => sum + l.usageCount, 0),
@@ -308,13 +440,13 @@ export function analyzeLabels(labels = [], cards = []) {
   );
 
   return {
-    labelsWithStats: labels.map(lbl => ({
+    labelsWithStats: labels.map((lbl) => ({
       ...lbl,
       usageCount: usageMap[lbl.id]?.count || 0,
       cards: usageMap[lbl.id]?.cards || [],
     })),
     duplicateGroups,
-    unusedLabels: unusedLabels.map(lbl => ({
+    unusedLabels: unusedLabels.map((lbl) => ({
       ...lbl,
       usageCount: 0,
       cards: [],

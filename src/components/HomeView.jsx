@@ -107,6 +107,28 @@ export default function HomeView({
         </button>
       </div>
 
+      {/* Advisory banner if board has no labels */}
+      {stats.totalLabelsCount === 0 && (
+        <div style={{
+          backgroundColor: '#F7F8F9',
+          border: '1px dashed #091E4224',
+          borderRadius: '8px',
+          padding: '14px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <Tag size={18} style={{ color: '#626F86', flexShrink: 0 }} />
+          <div style={{ fontSize: '13px', color: '#44546F', lineHeight: '1.5' }}>
+            <strong style={{ color: '#172B4D', display: 'block', marginBottom: '2px' }}>
+              No labels detected on this board yet
+            </strong>
+            If your board has cards with labels, click <strong>Scan Again</strong>. You can also view or create new labels in the <strong>All Labels</strong> tab.
+          </div>
+        </div>
+      )}
+
       {/* "Needs Attention" Section matching screenshot 2 */}
       <div className="needs-attention-section">
         <h3 className="needs-attention-title">Needs Attention</h3>
