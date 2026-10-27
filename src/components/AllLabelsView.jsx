@@ -15,7 +15,7 @@ export default function AllLabelsView({
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [activeActionMenu, setActiveActionMenu] = useState(null); // label id of open menu
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 8;
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

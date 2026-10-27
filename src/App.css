@@ -51,11 +51,13 @@ body {
   margin: 0;
   width: 100%;
   height: 100%;
-  min-height: 100vh;
+  max-height: 100%;
+  min-height: 0;
   background: #ffffff;
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .app-wrapper.standalone-mode {
@@ -111,23 +113,32 @@ body {
   max-width: 100%;
   width: 100%;
   height: 100%;
-  min-height: 100vh;
+  max-height: 100%;
+  min-height: 0;
   border-radius: 0;
   border: none;
   box-shadow: none;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Header */
 .modal-header {
   height: 54px;
   min-height: 54px;
-  padding: 0 18px;
+  max-height: 54px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #ffffff;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header-left {
@@ -236,25 +247,31 @@ body {
   display: flex;
   flex: 1;
   height: calc(100% - 54px);
+  max-height: calc(100% - 54px);
   min-height: 0;
   width: 100%;
+  max-width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Sidebar */
 .modal-sidebar {
-  width: 225px;
-  min-width: 225px;
-  max-width: 225px;
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 10px;
+  padding: 12px 10px;
   height: 100%;
+  max-height: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar-nav {
@@ -365,8 +382,11 @@ body {
 .modal-content-area {
   flex: 1;
   height: 100%;
+  max-height: 100%;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -823,27 +843,42 @@ body {
   text-align: center;
   letter-spacing: -0.1px;
   box-shadow: 0 1px 2px rgba(9, 30, 66, 0.08);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.trello-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .trello-chip-md {
-  padding: 4px 18px;
-  min-width: 78px;
-  font-size: 13.5px;
+  padding: 3px 12px;
+  min-width: 60px;
+  font-size: 13px;
 }
 
 .trello-chip-sm {
-  padding: 2px 10px;
-  min-width: 54px;
-  font-size: 12px;
+  padding: 2px 8px;
+  min-width: 48px;
+  font-size: 11.5px;
 }
 
 /* ---------------- Duplicate Labels View (Screenshot 3) ---------------- */
 .dup-view-wrapper {
-  padding: 24px 28px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: 16px;
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 12px;
+  min-height: 0;
+  overflow-x: hidden;
 }
 
 .dup-header-row {
@@ -2408,11 +2443,15 @@ body {
    SCREENSHOT 2 & 3: UNUSED LABELS & CONFIRMATION MODAL
    ============================================================== */
 .unused-view-wrapper {
-  padding: 24px 28px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow-x: hidden;
 }
 
 .unused-header-row {
@@ -2716,28 +2755,36 @@ body {
    SCREENSHOT 4 & 5: ALL LABELS TABLE, DROPDOWN & PAGINATION
    ============================================================== */
 .all-labels-view-wrap {
-  padding: 24px 28px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow-x: hidden;
 }
 
 .all-labels-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .all-labels-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #091e42;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .all-labels-subtitle {
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: #626f86;
   margin: 0;
 }
@@ -2745,7 +2792,8 @@ body {
 .header-right-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .search-box-wrap {
@@ -2754,22 +2802,25 @@ body {
   align-items: center;
   border: 1px solid #dfe1e6;
   border-radius: 6px;
-  padding: 0 10px;
+  padding: 0 8px;
   background: #ffffff;
-  height: 36px;
-  width: 200px;
+  height: 32px;
+  width: 150px;
+  box-sizing: border-box;
 }
 
 .search-icon-svg {
   color: #626f86;
   margin-right: 6px;
+  flex-shrink: 0;
 }
 
 .search-box-wrap input {
   border: none;
   outline: none;
   width: 100%;
-  font-size: 13px;
+  font-size: 12.5px;
+  min-width: 0;
 }
 
 .btn-add-label {
@@ -2780,10 +2831,12 @@ body {
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  padding: 0 16px;
-  height: 36px;
+  padding: 0 12px;
+  height: 32px;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: background 0.15s ease;
 }
@@ -2798,18 +2851,22 @@ body {
   background: #ffffff;
   overflow: visible;
   box-shadow: 0 1px 3px rgba(9, 30, 66, 0.04);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .all-labels-table-head {
   display: grid;
-  grid-template-columns: 44px 1.4fr 100px 80px 100px 70px;
+  grid-template-columns: 34px minmax(80px, 1fr) 52px 50px 72px 42px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: #fafbfc;
   border-bottom: 1px solid #ebecf0;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #626f86;
+  box-sizing: border-box;
 }
 
 .all-labels-table-body {
@@ -2819,12 +2876,13 @@ body {
 
 .all-labels-row {
   display: grid;
-  grid-template-columns: 44px 1.4fr 100px 80px 100px 70px;
+  grid-template-columns: 34px minmax(80px, 1fr) 52px 50px 72px 42px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 6px 12px;
   border-bottom: 1px solid #f1f2f4;
-  font-size: 13.5px;
+  font-size: 12.5px;
   transition: background 0.12s ease;
+  box-sizing: border-box;
 }
 
 .all-labels-row:last-child {
