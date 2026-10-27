@@ -71,41 +71,84 @@ export default function HomeView({
         </button>
       </div>
 
-      {/* Top 3 Stat Cards Row matching screenshot 2 */}
-      <div className="audit-stats-grid">
-        {/* Card 1: Total Labels */}
-        <button
-          type="button"
-          className="audit-stat-card audit-card-blue"
-          onClick={() => onNavigate('all')}
-          title="View all labels"
-        >
-          <div className="audit-stat-number blue">{stats.totalLabelsCount}</div>
-          <div className="audit-stat-label">Total Labels</div>
-        </button>
+      {/* Top 3 Stat Cards Row */}
+      {(() => {
+        const inUseCount = Math.max(0, (stats.totalLabelsCount || 0) - (stats.unusedLabelsCount || 0));
+        return (
+          <>
+            <div className="audit-stats-grid">
+              {/* Card 1: Total Labels */}
+              <button
+                type="button"
+                className="audit-stat-card audit-card-blue"
+                onClick={() => onNavigate('all')}
+                title="View all labels"
+              >
+                <div className="audit-stat-number blue">{stats.totalLabelsCount}</div>
+                <div className="audit-stat-label">Total Labels</div>
+                <div style={{ fontSize: '11px', color: '#0C66E4', marginTop: '4px', fontWeight: '500' }}>
+                  {inUseCount} in use on cards
+                </div>
+              </button>
 
-        {/* Card 2: Duplicate Labels */}
-        <button
-          type="button"
-          className="audit-stat-card audit-card-pink"
-          onClick={() => onNavigate('duplicates')}
-          title="View duplicate labels"
-        >
-          <div className="audit-stat-number red">{stats.duplicateLabelsCount}</div>
-          <div className="audit-stat-label">Duplicate Labels</div>
-        </button>
+              {/* Card 2: Duplicate Labels */}
+              <button
+                type="button"
+                className="audit-stat-card audit-card-pink"
+                onClick={() => onNavigate('duplicates')}
+                title="View duplicate labels"
+              >
+                <div className="audit-stat-number red">{stats.duplicateLabelsCount}</div>
+                <div className="audit-stat-label">Duplicate Labels</div>
+                <div style={{ fontSize: '11px', color: '#626F86', marginTop: '4px' }}>
+                  Same name labels
+                </div>
+              </button>
 
-        {/* Card 3: Unused Labels */}
-        <button
-          type="button"
-          className="audit-stat-card audit-card-yellow"
-          onClick={() => onNavigate('unused')}
-          title="View unused labels"
-        >
-          <div className="audit-stat-number yellow">{stats.unusedLabelsCount}</div>
-          <div className="audit-stat-label">Unused Labels</div>
-        </button>
-      </div>
+              {/* Card 3: Unused Labels */}
+              <button
+                type="button"
+                className="audit-stat-card audit-card-yellow"
+                onClick={() => onNavigate('unused')}
+                title="View unused labels"
+              >
+                <div className="audit-stat-number yellow">{stats.unusedLabelsCount}</div>
+                <div className="audit-stat-label">Unused Labels</div>
+                <div style={{ fontSize: '11px', color: '#A54800', marginTop: '4px' }}>
+                  0 cards attached
+                </div>
+              </button>
+            </div>
+
+            {/* Quick in-use status banner */}
+            {inUseCount > 0 && (
+              <div style={{
+                background: '#F0FBF6',
+                border: '1px solid #BAF3DB',
+                borderRadius: '8px',
+                padding: '10px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '13px',
+                color: '#172B4D'
+              }}>
+                <div>
+                  <strong style={{ color: '#216E4E' }}>✓ {inUseCount} label{inUseCount === 1 ? '' : 's'} active</strong> on your cards ({stats.unusedLabelsCount} empty palette label{stats.unusedLabelsCount === 1 ? '' : 's'})
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('all')}
+                  style={{ background: 'none', border: 'none', color: '#0C66E4', fontWeight: '600', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  View all labels &rarr;
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Advisory banner if board has no labels */}
       {stats.totalLabelsCount === 0 && (
