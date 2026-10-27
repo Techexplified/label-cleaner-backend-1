@@ -55,6 +55,11 @@
           return openLabelCleanerModal(t);
         },
 
+        // Enables Trello card data access for this Power-Up
+        'card-badges': function (t, options) {
+          return [];
+        },
+
         // Authorization status
         'authorization-status': function (t, options) {
           return t.get('member', 'private', 'trello_token').then(function (token) {

@@ -173,18 +173,34 @@ export async function getTrelloNativeBoardData() {
     }
   }
 
-  // 2. Fetch cards safely (ONLY request allowed fields: 'id', 'name', 'labels')
-  // CRITICAL: Do NOT request 'idLabels' as that causes Trello client library to reject!
+  // 2. Fetch cards safely with multiple fallbacks
   let cardsData = [];
   try {
-    cardsData = await t.cards('id', 'name', 'labels');
+    const directCards = await t.cards('id', 'name', 'labels');
+    if (Array.isArray(directCards) && directCards.length > 0) {
+      cardsData = directCards;
+    }
   } catch (cardErr1) {
-    console.warn('t.cards("id", "name", "labels") failed, trying t.cards("all"):', cardErr1);
+    console.warn('t.cards("id", "name", "labels") failed, trying fallbacks:', cardErr1?.message || cardErr1);
     try {
-      cardsData = await t.cards('all');
+      const allCards = await t.cards('all');
+      if (Array.isArray(allCards) && allCards.length > 0) {
+        cardsData = allCards;
+      }
     } catch (cardErr2) {
-      console.error('All t.cards calls failed:', cardErr2);
-      cardsData = [];
+      console.warn('t.cards("all") failed, trying t.lists fallback:', cardErr2?.message || cardErr2);
+      try {
+        const lists = await t.lists('all');
+        if (Array.isArray(lists)) {
+          lists.forEach((lst) => {
+            if (Array.isArray(lst.cards)) {
+              cardsData.push(...lst.cards);
+            }
+          });
+        }
+      } catch (listErr) {
+        console.warn('t.lists fallback failed:', listErr?.message || listErr);
+      }
     }
   }
 
