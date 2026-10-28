@@ -11,7 +11,8 @@ export default function Header({ boardName, isTrello, onClose, onOpenSettings })
         <h1 className="header-title">Label Cleaner</h1>
         {boardName && (
           <span className="board-badge" title={`Current Board: ${boardName}`}>
-            {boardName}
+            <span className="board-badge-prefix">Board:</span>
+            <span className="board-badge-name">{boardName}</span>
           </span>
         )}
       </div>

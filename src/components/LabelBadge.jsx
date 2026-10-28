@@ -21,7 +21,7 @@ export default function LabelBadge({
       }}
     >
       <span className="trello-chip-name">
-        {name && name.trim() ? name : <i>(unnamed)</i>}
+        {name && name.trim() ? name : <em className="unnamed-label-placeholder">(unnamed)</em>}
       </span>
       {showCount && count !== undefined && (
         <span className="trello-chip-count">{count}</span>

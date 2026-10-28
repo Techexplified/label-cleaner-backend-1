@@ -171,16 +171,36 @@ body {
 }
 
 .board-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
+  color: #44546f;
   background: #f1f2f4;
-  padding: 3px 8px;
-  border-radius: 4px;
-  max-width: 200px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  max-width: 240px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border: 1px solid #dfe1e6;
+}
+
+.board-badge-prefix {
+  font-size: 11px;
+  font-weight: 600;
+  color: #626f86;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.board-badge-name {
+  font-weight: 600;
+  color: #091e42;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .header-right {
@@ -854,6 +874,12 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.unnamed-label-placeholder {
+  font-style: italic;
+  opacity: 0.88;
+  font-weight: 500;
 }
 
 .trello-chip-md {
@@ -2792,8 +2818,9 @@ body {
 .header-right-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
 }
 
 .search-box-wrap {
@@ -2802,11 +2829,17 @@ body {
   align-items: center;
   border: 1px solid #dfe1e6;
   border-radius: 6px;
-  padding: 0 8px;
+  padding: 0 10px;
   background: #ffffff;
-  height: 32px;
-  width: 150px;
+  height: 34px;
+  width: 175px;
   box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-box-wrap:focus-within {
+  border-color: #0c66e4;
+  box-shadow: 0 0 0 2px rgba(12, 102, 228, 0.2);
 }
 
 .search-icon-svg {
@@ -2819,30 +2852,40 @@ body {
   border: none;
   outline: none;
   width: 100%;
-  font-size: 12.5px;
+  font-size: 13px;
   min-width: 0;
+  color: #091e42;
+  background: transparent;
 }
 
 .btn-add-label {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   background: #0c66e4;
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 0 12px;
-  height: 32px;
+  padding: 0 14px;
+  height: 34px;
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
+  line-height: 1;
   transition: background 0.15s ease;
 }
 
 .btn-add-label:hover {
   background: #0052cc;
+}
+
+.btn-add-label span {
+  white-space: nowrap;
+  line-height: 1;
+  display: inline-block;
 }
 
 .all-labels-table-box {
@@ -2858,15 +2901,16 @@ body {
 
 .all-labels-table-head {
   display: grid;
-  grid-template-columns: 34px minmax(80px, 1fr) 52px 50px 72px 42px;
+  grid-template-columns: 36px minmax(100px, 1fr) 56px 56px 82px 48px;
   align-items: center;
-  padding: 8px 12px;
+  padding: 9px 14px;
   background: #fafbfc;
   border-bottom: 1px solid #ebecf0;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #626f86;
   box-sizing: border-box;
+  user-select: none;
 }
 
 .all-labels-table-body {
@@ -2876,11 +2920,11 @@ body {
 
 .all-labels-row {
   display: grid;
-  grid-template-columns: 34px minmax(80px, 1fr) 52px 50px 72px 42px;
+  grid-template-columns: 36px minmax(100px, 1fr) 56px 56px 82px 48px;
   align-items: center;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-bottom: 1px solid #f1f2f4;
-  font-size: 12.5px;
+  font-size: 13px;
   transition: background 0.12s ease;
   box-sizing: border-box;
 }
@@ -2894,12 +2938,42 @@ body {
 }
 
 .all-labels-row.row-selected {
-  background: #f8fafc;
+  background: #f0f7ff;
+}
+
+.th-cell,
+.td-cell {
+  display: flex;
+  align-items: center;
+}
+
+.th-cell.th-check,
+.td-cell.td-check {
+  justify-content: flex-start;
+}
+
+.th-cell.th-name,
+.td-cell.td-name {
+  justify-content: flex-start;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.th-cell.th-color,
+.td-cell.td-color,
+.th-cell.th-cards,
+.td-cell.td-cards,
+.th-cell.th-status,
+.td-cell.td-status,
+.th-cell.th-actions,
+.td-cell.td-actions {
+  justify-content: center;
+  text-align: center;
 }
 
 .color-circular-dot {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   display: inline-block;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
@@ -2911,24 +2985,25 @@ body {
   color: #44546f;
 }
 
-.status-badge.in-use {
-  display: inline-block;
-  background: #dcfce7;
-  color: #166534;
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11.5px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 4px;
+  white-space: nowrap;
+}
+
+.status-badge.in-use {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .status-badge.unused {
-  display: inline-block;
   background: #f1f2f4;
-  color: #44546f;
-  font-size: 11.5px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+  color: #626f86;
 }
 
 .actions-dropdown-container {
