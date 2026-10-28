@@ -13,8 +13,9 @@ export const TRELLO_COLORS = {
   null: { label: 'No Color', hex: '#b3bac5', darkHex: '#626f86', bg: '#e9ecef', lightBg: '#f8f9fa', text: '#172b4d', dot: '#94a3b8' },
 };
 
-export const DEFAULT_APP_KEY = import.meta.env.VITE_TRELLO_API_KEY || '5f4d8e3b2a1c0d9e8f7a6b5c4d3e2f1a';
-export const APP_NAME = import.meta.env.VITE_TRELLO_APP_NAME || 'Label Cleaner Power-Up';
+export const DEFAULT_APP_KEY = import.meta.env.VITE_TRELLO_API_KEY || '8ff35f5f772805ddb9058e7b406afd00';
+export const DEFAULT_APP_TOKEN = import.meta.env.VITE_TRELLO_API_TOKEN || 'ATTA348f4e1a014061b8af5d88371a8c1232902f63531df49d809af660c6c7d343c02B458A4E';
+export const APP_NAME = import.meta.env.VITE_TRELLO_APP_NAME || 'Board Declutter';
 
 
 
@@ -65,7 +66,7 @@ const STORAGE_KEYS = {
 export function getSavedCredentials() {
   return {
     apiKey: localStorage.getItem(STORAGE_KEYS.API_KEY) || DEFAULT_APP_KEY,
-    token: localStorage.getItem(STORAGE_KEYS.API_TOKEN) || '',
+    token: localStorage.getItem(STORAGE_KEYS.API_TOKEN) || DEFAULT_APP_TOKEN,
     boardId: localStorage.getItem(STORAGE_KEYS.SELECTED_BOARD) || '',
   };
 }
@@ -87,7 +88,7 @@ export async function getTrelloPowerUpToken() {
       console.warn('Could not read token from Trello member storage', e);
     }
   }
-  return localStorage.getItem(STORAGE_KEYS.API_TOKEN) || '';
+  return localStorage.getItem(STORAGE_KEYS.API_TOKEN) || DEFAULT_APP_TOKEN;
 }
 
 // Save token to Trello Power-Up private storage

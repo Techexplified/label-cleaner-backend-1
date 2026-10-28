@@ -62,19 +62,16 @@
 
         // Authorization status
         'authorization-status': function (t, options) {
-          return t.get('member', 'private', 'trello_token').then(function (token) {
-            return { authorized: !!token };
-          });
+          return Promise.resolve({ authorized: true });
         },
 
         // Show authorization popup
         'show-authorization': function (t, options) {
-          return t.popup({
-            title: 'Authorize Label Cleaner',
-            url: origin + '/auth.html',
-            height: 250,
-          });
+          return openLabelCleanerModal(t);
         },
+      }, {
+        appKey: '8ff35f5f772805ddb9058e7b406afd00',
+        appName: 'Board Declutter'
       });
     </script>
   </body>
