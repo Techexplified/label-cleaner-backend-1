@@ -33,7 +33,9 @@ body {
   -webkit-font-smoothing: antialiased;
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  max-width: 100vw;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
 }
 
 /* App Wrapper: handles standalone demo canvas vs Trello iframe */
@@ -56,7 +58,8 @@ body {
   background: #ffffff;
   align-items: stretch;
   justify-content: stretch;
-  overflow: hidden;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
   box-sizing: border-box;
 }
 
@@ -127,10 +130,10 @@ body {
 
 /* Header */
 .modal-header {
-  height: 54px;
-  min-height: 54px;
-  max-height: 54px;
-  padding: 0 16px;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  padding: 0 14px;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
@@ -138,24 +141,30 @@ body {
   background: #ffffff;
   flex-shrink: 0;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .header-icon-box {
   width: 28px;
   height: 28px;
+  min-width: 28px;
   background: #e9f2ff;
   color: var(--primary);
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .header-icon {
@@ -277,15 +286,15 @@ body {
 
 /* Sidebar */
 .modal-sidebar {
-  width: 215px;
-  min-width: 215px;
-  max-width: 215px;
+  width: 185px;
+  min-width: 185px;
+  max-width: 185px;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px 12px;
+  padding: 12px 8px;
   height: 100%;
   max-height: 100%;
   flex-shrink: 0;
@@ -297,19 +306,19 @@ body {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sidebar-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
   border: none;
   background: transparent;
   color: var(--text-sub);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
@@ -341,6 +350,7 @@ body {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
+  min-width: 20px;
 }
 
 .nav-item-label {
@@ -2783,10 +2793,10 @@ body {
    SCREENSHOT 4 & 5: ALL LABELS TABLE, DROPDOWN & PAGINATION
    ============================================================== */
 .all-labels-view-wrap {
-  padding: 18px 24px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2798,13 +2808,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .all-labels-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #091e42;
   margin-bottom: 2px;
@@ -2812,7 +2822,7 @@ body {
 }
 
 .all-labels-subtitle {
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: #626f86;
   margin: 0;
 }
@@ -2820,7 +2830,7 @@ body {
 .header-right-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-shrink: 0;
   flex-wrap: nowrap;
 }
@@ -2831,10 +2841,10 @@ body {
   align-items: center;
   border: 1px solid #dfe1e6;
   border-radius: 6px;
-  padding: 0 10px;
+  padding: 0 8px;
   background: #ffffff;
-  height: 34px;
-  width: 175px;
+  height: 30px;
+  width: 135px;
   box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -2846,7 +2856,7 @@ body {
 
 .search-icon-svg {
   color: #626f86;
-  margin-right: 6px;
+  margin-right: 5px;
   flex-shrink: 0;
 }
 
@@ -2854,7 +2864,7 @@ body {
   border: none;
   outline: none;
   width: 100%;
-  font-size: 13px;
+  font-size: 12px;
   min-width: 0;
   color: #091e42;
   background: transparent;
@@ -2864,15 +2874,15 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   background: #0c66e4;
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 0 14px;
-  height: 34px;
+  padding: 0 10px;
+  height: 30px;
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
@@ -2894,7 +2904,7 @@ body {
   border: 1px solid #ebecf0;
   border-radius: 8px;
   background: #ffffff;
-  overflow: visible;
+  overflow: hidden;
   box-shadow: 0 1px 3px rgba(9, 30, 66, 0.04);
   width: 100%;
   max-width: 100%;
@@ -2903,12 +2913,12 @@ body {
 
 .all-labels-table-head {
   display: grid;
-  grid-template-columns: 36px minmax(100px, 1fr) 56px 56px 82px 48px;
+  grid-template-columns: 30px minmax(70px, 1fr) 44px 44px 68px 36px;
   align-items: center;
-  padding: 9px 14px;
+  padding: 7px 10px;
   background: #fafbfc;
   border-bottom: 1px solid #ebecf0;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #626f86;
   box-sizing: border-box;
@@ -2922,11 +2932,11 @@ body {
 
 .all-labels-row {
   display: grid;
-  grid-template-columns: 36px minmax(100px, 1fr) 56px 56px 82px 48px;
+  grid-template-columns: 30px minmax(70px, 1fr) 44px 44px 68px 36px;
   align-items: center;
-  padding: 7px 14px;
+  padding: 5px 10px;
   border-bottom: 1px solid #f1f2f4;
-  font-size: 13px;
+  font-size: 12px;
   transition: background 0.12s ease;
   box-sizing: border-box;
 }

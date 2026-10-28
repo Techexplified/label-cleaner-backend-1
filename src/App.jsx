@@ -99,6 +99,8 @@ function App() {
 
   // Initial mount & Trello render hook
   useEffect(() => {
+    // Reset any unwanted horizontal scroll position
+    window.scrollTo(0, 0);
     const inIframe = isTrelloIframe();
     setIsTrello(inIframe);
     if (inIframe) {
