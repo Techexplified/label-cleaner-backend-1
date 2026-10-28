@@ -52,10 +52,6 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // Trello write authorization prompt modal
-  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null);
-
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3500);
@@ -168,20 +164,18 @@ function App() {
     let token = await getTrelloPowerUpToken();
     if (token) return token;
 
-    // If no token in Trello mode, open authorization prompt
-    return new Promise((resolve, reject) => {
-      setPendingAction(() => async () => {
-        try {
-          const newToken = await openTrelloAuthPopup(credentials.apiKey);
-          await saveTrelloPowerUpToken(newToken);
-          setCredentials(prev => ({ ...prev, token: newToken }));
-          resolve(newToken);
-        } catch (err) {
-          reject(err);
-        }
-      });
-      setShowAuthPrompt(true);
-    });
+    try {
+      const newToken = await openTrelloAuthPopup(credentials.apiKey);
+      if (newToken) {
+        await saveTrelloPowerUpToken(newToken);
+        setCredentials(prev => ({ ...prev, token: newToken }));
+        return newToken;
+      }
+    } catch (err) {
+      console.warn('Authorization cancelled or closed:', err);
+      throw new Error('Trello authorization required to update labels.');
+    }
+    return token;
   };
 
   // Merge single duplicate cluster directly on Trello
@@ -274,15 +268,6 @@ function App() {
       showToast(`Failed to update label: ${err.message}`);
     } finally {
       setIsOperating(false);
-    }
-  };
-
-  const handleConfirmAuth = async () => {
-    setShowAuthPrompt(false);
-    if (pendingAction) {
-      const action = pendingAction;
-      setPendingAction(null);
-      await action();
     }
   };
 
@@ -441,35 +426,6 @@ function App() {
           </main>
         </div>
       </div>
-
-      {/* Trello 1-Click Authorization Prompt */}
-      {showAuthPrompt && (
-        <div className="modal-backdrop">
-          <div className="confirm-modal-box">
-            <h3 className="confirm-modal-title">Authorize Trello Access</h3>
-            <p className="confirm-modal-desc">
-              To update cards and merge or delete labels on this board, Trello requires one-time authorization.
-            </p>
-            <div className="confirm-modal-buttons">
-              <button
-                className="btn-cancel"
-                onClick={() => {
-                  setShowAuthPrompt(false);
-                  setPendingAction(null);
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn-primary-save"
-                onClick={handleConfirmAuth}
-              >
-                Authorize with Trello
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Trello Power-Up Setup Guide Modal */}
       <TrelloSetupModal
