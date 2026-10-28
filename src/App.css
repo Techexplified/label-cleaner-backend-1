@@ -277,15 +277,15 @@ body {
 
 /* Sidebar */
 .modal-sidebar {
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
+  width: 215px;
+  min-width: 215px;
+  max-width: 215px;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 12px 10px;
+  padding: 16px 12px;
   height: 100%;
   max-height: 100%;
   flex-shrink: 0;
@@ -297,14 +297,14 @@ body {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .sidebar-nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -339,6 +339,8 @@ body {
   justify-content: center;
   color: var(--text-muted);
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
 
 .nav-item-label {
@@ -896,13 +898,13 @@ body {
 
 /* ---------------- Duplicate Labels View (Screenshot 3) ---------------- */
 .dup-view-wrapper {
-  padding: 14px 18px;
+  padding: 18px 24px;
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  gap: 12px;
+  gap: 16px;
   min-height: 0;
   overflow-x: hidden;
 }
@@ -2469,10 +2471,10 @@ body {
    SCREENSHOT 2 & 3: UNUSED LABELS & CONFIRMATION MODAL
    ============================================================== */
 .unused-view-wrapper {
-  padding: 14px 18px;
+  padding: 18px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2781,10 +2783,10 @@ body {
    SCREENSHOT 4 & 5: ALL LABELS TABLE, DROPDOWN & PAGINATION
    ============================================================== */
 .all-labels-view-wrap {
-  padding: 14px 18px;
+  padding: 18px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
