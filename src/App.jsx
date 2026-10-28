@@ -24,6 +24,7 @@ import {
   createLiveLabel,
   mergeLiveLabel,
   analyzeLabels,
+  DEFAULT_APP_KEY,
 } from './services/trelloService';
 import './App.css';
 
@@ -163,6 +164,12 @@ function App() {
   const ensureTrelloToken = async () => {
     let token = await getTrelloPowerUpToken();
     if (token) return token;
+
+    // If API key is dummy/placeholder, do not open a broken popup window
+    if (!credentials.apiKey || credentials.apiKey === DEFAULT_APP_KEY) {
+      setIsSettingsOpen(true);
+      throw new Error('Please add your Trello API Key and Token once to merge labels directly.');
+    }
 
     try {
       const newToken = await openTrelloAuthPopup(credentials.apiKey);

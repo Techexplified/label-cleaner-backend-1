@@ -6,8 +6,9 @@ export default function TrelloSetupModal({
   onClose,
   credentials = {},
   onSaveCredentials,
+  initialTab = 'credentials',
 }) {
-  const [activeTab, setActiveTab] = useState('guide');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(credentials.apiKey || '');
   const [tokenInput, setTokenInput] = useState(credentials.token || '');
